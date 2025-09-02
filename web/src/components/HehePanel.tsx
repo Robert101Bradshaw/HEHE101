@@ -1,11 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+
+interface HeheOutput {
+  videoUrl?: string;
+  imageUrl?: string;
+  [key: string]: unknown;
+}
 
 export default function HehePanel() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
-  const [out, setOut] = useState<any>(null);
+  const [out, setOut] = useState<HeheOutput | null>(null);
 
   async function run(e: React.FormEvent) {
     e.preventDefault();
@@ -20,14 +27,57 @@ export default function HehePanel() {
   const mediaUrl = out?.videoUrl || out?.imageUrl;
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-      <form onSubmit={run} className="flex flex-col gap-2">
-        <input className="rounded-md border border-white/10 bg-[#0b0e14] px-3 py-2 text-sm text-zinc-100" placeholder="Describe your scene…" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
-        <button disabled={loading || !prompt} className="rounded-md bg-gradient-to-br from-violet-500 to-sky-400 px-3 py-2 text-sm font-medium text-white disabled:opacity-50">{loading ? "Generating…" : "Generate"}</button>
+    <div className="space-y-4">
+      <form onSubmit={run} className="space-y-4">
+        <div>
+          <label htmlFor="prompt" className="block text-sm font-medium text-foreground mb-2 text-center">
+            [REDACTED] your [REDACTED]
+          </label>
+          <input 
+            id="prompt"
+            className="w-full rounded-lg border border-border bg-surface-secondary px-4 py-3 text-foreground placeholder-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 transition-colors text-center" 
+            placeholder="[REDACTED] a [REDACTED] scene..." 
+            value={prompt} 
+            onChange={(e) => setPrompt(e.target.value)} 
+          />
+        </div>
+        <button 
+          disabled={loading || !prompt} 
+          className="w-full rounded-lg bg-gradient-to-r from-accent to-accent-secondary px-6 py-3 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed hover:from-accent-secondary hover:to-accent transition-all duration-200 shadow-lg"
+        >
+          {loading ? "[REDACTED]…" : "[REDACTED]"}
+        </button>
       </form>
-      {mediaUrl && mediaUrl.endsWith(".mp4") && (<video src={mediaUrl} controls className="mt-4 w-full rounded-lg border border-white/10" />)}
-      {mediaUrl && !mediaUrl.endsWith(".mp4") && (<img src={mediaUrl} alt="HEHE output" className="mt-4 w-full rounded-lg border border-white/10" />)}
-      {out && (<pre className="mt-4 max-h-72 overflow-auto rounded-md border border-white/10 bg-black/40 p-3 text-xs">{JSON.stringify(out, null, 2)}</pre>)}
+      
+      {mediaUrl && mediaUrl.endsWith(".mp4") && (
+        <div className="mt-6">
+          <video src={mediaUrl} controls className="w-full rounded-lg border border-border bg-surface-secondary" />
+        </div>
+      )}
+      
+      {mediaUrl && !mediaUrl.endsWith(".mp4") && (
+        <div className="mt-6">
+          <div className="rounded-lg border border-border bg-surface-secondary overflow-hidden">
+            <Image 
+              src={mediaUrl} 
+              alt="[REDACTED] output" 
+              width={800}
+              height={600}
+              className="w-full h-auto"
+              unoptimized
+            />
+          </div>
+        </div>
+      )}
+      
+      {out && (
+        <div className="mt-6">
+          <h3 className="text-sm font-medium text-foreground mb-2 text-center">[REDACTED] Response:</h3>
+          <pre className="max-h-72 overflow-auto rounded-lg border border-border bg-surface-secondary p-4 text-xs text-muted font-mono">
+            {JSON.stringify(out, null, 2)}
+          </pre>
+        </div>
+      )}
     </div>
   );
 }
