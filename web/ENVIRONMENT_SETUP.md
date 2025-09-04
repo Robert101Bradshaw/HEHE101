@@ -4,23 +4,25 @@ To fix the runtime errors, you need to configure the following environment varia
 
 ## Required Environment Variables
 
-### 1. API Keys
+### 1. API Keys (Optional - app works without them)
 ```
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
 OPENROUTER_API_KEY=your_openrouter_api_key_here
 ```
 
-### 2. NextAuth Configuration
+**Note:** The app includes fallbacks and will work without these keys, but you'll need them for full AI functionality.
+
+### 2. NextAuth Configuration (Optional - has fallback)
 ```
 NEXTAUTH_SECRET=eureka-ai-creative-studio-production-secret-2024-secure-fallback
 NEXTAUTH_URL=https://your-domain.vercel.app
 ```
 
-**Note:** The app now includes a fallback secret, but it's recommended to set your own secure secret.
+**Note:** The app includes a fallback secret, so this is optional but recommended for production.
 
 ### 3. Site Configuration
 ```
-NEXT_PUBLIC_SITE_URL=https://your-domain.vercel.app
+# No additional site configuration needed - Vercel handles this automatically
 ```
 
 ## How to Set Environment Variables in Vercel

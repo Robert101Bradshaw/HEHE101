@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+        "HTTP-Referer": "https://eureka-ai-creative-studio.vercel.app",
         "X-Title": "UPHORIC AI Creative Studio",
       },
       body: JSON.stringify({

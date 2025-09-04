@@ -16,7 +16,7 @@ async function getGenerationStats(generationId: string): Promise<unknown> {
     const response = await fetch(`https://openrouter.ai/api/v1/generation?id=${generationId}`, {
       headers: {
         "Authorization": `Bearer ${apiKey}`,
-        "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+        "HTTP-Referer": "https://eureka-ai-creative-studio.vercel.app",
         "X-Title": "EUREKA AI Creative Studio",
       },
     });
@@ -46,7 +46,7 @@ async function analyzeImageWithGemini(imageBase64: string, userMessage: string):
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+        "HTTP-Referer": "https://eureka-ai-creative-studio.vercel.app",
         "X-Title": "EUREKA AI Creative Studio",
       },
       body: JSON.stringify({
@@ -277,7 +277,7 @@ Always be helpful, creative, and professional.`;
           }
 
           // Call the image generation API
-          const imageResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/generate-image-dalle`, {
+          const imageResponse = await fetch(`${request.nextUrl.origin}/api/generate-image-dalle`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
