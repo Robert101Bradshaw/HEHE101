@@ -33,125 +33,8 @@ async function getGenerationStats(generationId: string): Promise<unknown> {
   }
 }
 
-// Function to analyze image using Gemini Flash through OpenRouter
-async function analyzeImageWithGemini(imageBase64: string, userMessage: string): Promise<string> {
-  try {
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
-      throw new Error("OpenRouter API key not configured");
-    }
-
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://eureka-ai-creative-studio.vercel.app",
-        "X-Title": "EUREKA AI Creative Studio",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-1.5-flash:free",
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: `Analyze this image and provide creative insights. User request: ${userMessage}. 
-
-Please provide a comprehensive analysis covering:
-
-**Visual Analysis:**
-- Composition and layout structure
-- Color palette and color usage patterns
-- Lighting and shadow effects
-- Depth and perspective
-
-**Artistic Elements:**
-- Style and artistic techniques used
-- Visual elements and subject matter
-- Mood and emotional impact
-- Cultural or artistic references
-
-**Technical Assessment:**
-- Image quality and resolution
-- Technical execution details
-- Professional vs. amateur characteristics
-
-**Creative Insights:**
-- What makes this image effective
-- Areas for potential improvement
-- Creative suggestions for iteration
-- Style transfer possibilities
-
-Please be specific and provide actionable creative feedback.`
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: `data:image/jpeg;base64,${imageBase64}`,
-                  detail: "high" // Request high detail analysis
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 1500, // Increased for more detailed analysis
-        temperature: 0.7, // Balanced creativity and accuracy
-        top_p: 0.9, // High quality responses
-        stream: false // Disable streaming for this analysis
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error("Gemini API error:", errorData);
-      throw new Error("Failed to analyze image with Gemini");
-    }
-
-    const data = await response.json();
-    
-    // Check for OpenRouter error response
-    if (data.choices && data.choices[0]?.error) {
-      const error = data.choices[0].error;
-      console.error("OpenRouter API error:", error);
-      throw new Error(`OpenRouter API error: ${error.message} (Code: ${error.code})`);
-    }
-
-    // Check finish reason
-    const choice = data.choices[0];
-    if (choice?.finish_reason === "length") {
-      console.warn("Image analysis was truncated due to length limits");
-    } else if (choice?.finish_reason === "content_filter") {
-      console.warn("Image analysis was filtered due to content policies");
-    }
-
-    // Log usage for cost tracking
-    if (data.usage) {
-      console.log("OpenRouter usage:", {
-        prompt_tokens: data.usage.prompt_tokens,
-        completion_tokens: data.usage.completion_tokens,
-        total_tokens: data.usage.total_tokens,
-        model: data.model
-      });
-    }
-
-    // Query detailed generation stats for cost tracking
-    if (data.id) {
-      setTimeout(async () => {
-        const stats = await getGenerationStats(data.id);
-        if (stats) {
-          console.log("Detailed generation stats:", stats);
-        }
-      }, 1000); // Wait a bit for stats to be available
-    }
-
-    return choice?.message?.content || "Image analysis completed but no detailed response received.";
-  } catch (error) {
-    console.error("Gemini image analysis error:", error);
-    throw error;
-  }
-}
+// Image analysis temporarily disabled due to model compatibility issues
+// Will be re-enabled once correct Gemini model is identified
 
 export async function POST(request: NextRequest) {
   try {
@@ -184,57 +67,27 @@ export async function POST(request: NextRequest) {
     let content = null;
     let imageUrl = null;
 
-    // If there's a reference image, analyze it with Gemini first
+    // If there's a reference image, provide a helpful response
     if (referenceImage) {
-      try {
-        // The referenceImage should already be base64 from the client
-        const imageBase64 = referenceImage;
-        
-        // If it's not already base64, we need to handle it differently
-        if (typeof referenceImage === 'object' && referenceImage.type) {
-          // This is a File object from the client - we need to get the base64 data
-          // The client should send the base64 data instead of the File object
-          throw new Error("Please send the image as base64 data from the client");
-        }
-        
-        const imageAnalysis = await analyzeImageWithGemini(imageBase64, message);
-        
-        // Now use Anthropic to provide a creative response based on the analysis
-        const systemPrompt = `You are an intelligent AI creative assistant for EUREKA AI Creative Studio. 
+      // For now, provide a simple response about the uploaded image
+      const systemPrompt = `You are an intelligent AI creative assistant for EUREKA AI Creative Studio. 
 
-IMPORTANT: The user has uploaded a reference image that has been analyzed by Gemini AI. Here's the analysis:
+The user has uploaded a reference image and is asking: "${message}"
 
-${imageAnalysis}
+Please provide creative insights and suggestions based on their request. Let them know that you can see they've uploaded an image and you're ready to help with their creative project.`;
 
-Based on this analysis, provide creative insights, suggestions, and help the user with their creative project. Be specific about what you see in the image and how it relates to their request.`;
+      const anthropicResponse = await anthropic.messages.create({
+        model: "claude-3-5-sonnet-20240620",
+        max_tokens: 2048,
+        messages: [
+          {
+            role: "user" as const,
+            content: systemPrompt
+          }
+        ],
+      });
 
-        const anthropicResponse = await anthropic.messages.create({
-          model: "claude-3-5-sonnet-20240620",
-          max_tokens: 2048,
-          messages: [
-            {
-              role: "user" as const,
-              content: systemPrompt + "\n\nUser message: " + message
-            }
-          ],
-        });
-
-        content = anthropicResponse.content[0];
-      } catch (error) {
-        console.error("Image analysis error:", error);
-        // Fallback to text-only response
-        const fallbackResponse = await anthropic.messages.create({
-          model: "claude-3-5-sonnet-20240620",
-          max_tokens: 1024,
-          messages: [
-            {
-              role: "user" as const,
-              content: `I'm sorry, I encountered an error while analyzing your reference image: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again or ask me a question without the image. User message: ${message}`
-            }
-          ],
-        });
-        content = fallbackResponse.content[0];
-      }
+      content = anthropicResponse.content[0];
     } else {
       // No reference image - use Anthropic for regular chat
       const systemPrompt = `You are an intelligent AI creative assistant for EUREKA AI Creative Studio. You can:
