@@ -1,16 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import SidebarSwitcher from "@/components/SidebarSwitcher";
-import HehePanel from "@/components/HehePanel";
 import AnthropicChat from "@/components/AnthropicChat";
-
-interface GeneratedImage {
-  id: string;
-  url: string;
-  prompt: string;
-  timestamp: Date;
-}
 
 export default function Page() {
   const [activeTab, setActiveTab] = useState<"chat" | "simple">("chat");

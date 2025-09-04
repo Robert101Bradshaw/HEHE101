@@ -6,7 +6,7 @@ const anthropic = new Anthropic({
 });
 
 // Function to query generation stats for cost tracking
-async function getGenerationStats(generationId: string): Promise<any> {
+async function getGenerationStats(generationId: string): Promise<unknown> {
   try {
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
@@ -155,7 +155,7 @@ Please be specific and provide actionable creative feedback.`
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, conversationHistory, referenceImage } = await request.json();
+    const { message, referenceImage } = await request.json();
 
     if (!message) {
       return NextResponse.json(
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
     if (referenceImage) {
       try {
         // The referenceImage should already be base64 from the client
-        let imageBase64 = referenceImage;
+        const imageBase64 = referenceImage;
         
         // If it's not already base64, we need to handle it differently
         if (typeof referenceImage === 'object' && referenceImage.type) {
@@ -227,7 +227,7 @@ Based on this analysis, provide creative insights, suggestions, and help the use
           messages: [
             {
               role: "user" as const,
-              content: `I'm sorry, I encountered an error while analyzing your reference image: ${error.message}. Please try again or ask me a question without the image. User message: ${message}`
+              content: `I'm sorry, I encountered an error while analyzing your reference image: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again or ask me a question without the image. User message: ${message}`
             }
           ],
         });
