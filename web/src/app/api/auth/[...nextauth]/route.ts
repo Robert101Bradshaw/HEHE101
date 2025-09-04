@@ -26,6 +26,9 @@ declare module "next-auth/jwt" {
   }
 }
 
+// Use a consistent fallback secret for production
+const FALLBACK_SECRET = "eureka-ai-creative-studio-production-secret-2024-secure-fallback";
+
 const authOptions: NextAuthOptions = {
   providers: [],
   pages: {
@@ -34,6 +37,7 @@ const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  secret: process.env.NEXTAUTH_SECRET || FALLBACK_SECRET,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

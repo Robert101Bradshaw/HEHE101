@@ -166,16 +166,18 @@ export async function POST(request: NextRequest) {
 
     // Check if API keys are configured
     if (!process.env.ANTHROPIC_API_KEY) {
+      console.error("ANTHROPIC_API_KEY not configured");
       return NextResponse.json(
-        { error: "Anthropic API key not configured" },
-        { status: 500 }
+        { error: "AI service temporarily unavailable. Please try again later." },
+        { status: 503 }
       );
     }
 
     if (referenceImage && !process.env.OPENROUTER_API_KEY) {
+      console.error("OPENROUTER_API_KEY not configured for image analysis");
       return NextResponse.json(
-        { error: "OpenRouter API key not configured for image analysis" },
-        { status: 500 }
+        { error: "Image analysis service temporarily unavailable. Please try without uploading an image." },
+        { status: 503 }
       );
     }
 
@@ -323,9 +325,24 @@ Always be helpful, creative, and professional.`;
 
   } catch (error) {
     console.error("API error:", error);
+    
+    // Provide more specific error messages based on the error type
+    let errorMessage = "An unexpected error occurred. Please try again.";
+    let statusCode = 500;
+    
+    if (error instanceof Error) {
+      if (error.message.includes("API key")) {
+        errorMessage = "Service configuration issue. Please try again later.";
+        statusCode = 503;
+      } else if (error.message.includes("network") || error.message.includes("fetch")) {
+        errorMessage = "Network error. Please check your connection and try again.";
+        statusCode = 503;
+      }
+    }
+    
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
+      { error: errorMessage },
+      { status: statusCode }
     );
   }
 }
