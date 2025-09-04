@@ -50,7 +50,7 @@ async function analyzeImageWithGemini(imageBase64: string, userMessage: string):
         "X-Title": "EUREKA AI Creative Studio",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image-preview:free",
+        model: "google/gemini-1.5-flash:free",
         messages: [
           {
             role: "user",
@@ -209,7 +209,7 @@ ${imageAnalysis}
 Based on this analysis, provide creative insights, suggestions, and help the user with their creative project. Be specific about what you see in the image and how it relates to their request.`;
 
         const anthropicResponse = await anthropic.messages.create({
-          model: "claude-3-5-sonnet-20241022",
+          model: "claude-3-5-sonnet-20240620",
           max_tokens: 2048,
           messages: [
             {
@@ -224,7 +224,7 @@ Based on this analysis, provide creative insights, suggestions, and help the use
         console.error("Image analysis error:", error);
         // Fallback to text-only response
         const fallbackResponse = await anthropic.messages.create({
-          model: "claude-3-5-sonnet-20241022",
+          model: "claude-3-5-sonnet-20240620",
           max_tokens: 1024,
           messages: [
             {
@@ -249,7 +249,7 @@ When analyzing content, provide valuable insights and creative feedback.
 Always be helpful, creative, and professional.`;
 
       const response = await anthropic.messages.create({
-        model: "claude-3-5-sonnet-20241022",
+        model: "claude-3-5-sonnet-20240620",
         max_tokens: 2048,
         messages: [
           {
@@ -293,7 +293,7 @@ Always be helpful, creative, and professional.`;
             
             // Get final response from Anthropic about the generated image
             const finalResponse = await anthropic.messages.create({
-              model: "claude-3-5-sonnet-20241022",
+              model: "claude-3-5-sonnet-20240620",
               max_tokens: 1024,
               messages: [
                 {
